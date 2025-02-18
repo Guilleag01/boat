@@ -1,0 +1,8 @@
+[general]
+target = "main"
+main = "main.c"
+
+[build]
+build_dir = "build"
+cc = "gcc"
+cflags = "-Wall"
