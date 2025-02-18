@@ -41,7 +41,10 @@ impl Compiler {
         let mut o_s: Vec<String> = Vec::new();
 
         for file in self.needed_src.clone() {
-            let o_file = format!("{}.o", file.split(".").collect::<Vec<&str>>()[0]);
+            let o_file = format!(
+                "{}.o",
+                path::Path::new(&file).with_extension("").to_str().unwrap()
+            );
             let o_path = path::Path::new(&o_file);
             let mut o_comp = o_path.components();
             o_comp.next();
@@ -159,6 +162,7 @@ impl Compiler {
                 .unwrap()
                 .to_string(),
         );
+
         (src_file, header_files)
     }
 
