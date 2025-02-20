@@ -5,6 +5,7 @@ use std::{collections::HashSet, fs, path};
 
 use crate::config::Config;
 
+#[derive(Default)]
 pub struct Compiler {
     config: Config,
     path: String,

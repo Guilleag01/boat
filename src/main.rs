@@ -4,7 +4,7 @@ use std::{
     path::{self, Path},
 };
 
-use boat::{compiler::Compiler, config::Config};
+use boat::{compiler::Compiler, config::Config, init};
 use clap::Parser;
 
 #[derive(clap::ValueEnum, Clone, Debug)]
@@ -12,6 +12,7 @@ enum Modes {
     Build,
     Clean,
     Run,
+    Init,
 }
 
 impl Display for Modes {
@@ -20,6 +21,7 @@ impl Display for Modes {
             Modes::Build => f.write_str("build"), // "build".to_string(),
             Modes::Clean => f.write_str("clean"),
             Modes::Run => f.write_str("run"),
+            Modes::Init => f.write_str("init"),
         }
     }
 }
@@ -52,20 +54,27 @@ pub struct Args {
 
 fn main() {
     let args = Args::parse();
-    let conf_path = path::Path::new(args.path.as_str()).join("c_config.toml");
 
-    let contents = fs::read_to_string(conf_path.clone())
-        .unwrap_or_else(|_| panic!("Couldn't read {}", conf_path.to_str().unwrap()));
+    let mut compiler = Compiler::default();
 
-    let config: Config = toml::from_str(&contents).unwrap();
+    if let Modes::Init = args.mode {
+    } else {
+        let conf_path = path::Path::new(args.path.as_str()).join("c_config.toml");
 
-    // println!("{:?}", config);
+        let contents = fs::read_to_string(conf_path.clone())
+            .unwrap_or_else(|_| panic!("Couldn't read {}", conf_path.to_str().unwrap()));
 
-    let (src_files, header_files) = get_file_list(&args.path).expect("Error while readig files");
+        let config: Config = toml::from_str(&contents).unwrap();
 
-    // println!("{:?}, {:?}", src_files, header_files);
+        // println!("{:?}", config);
 
-    let mut compiler = Compiler::new(config, args.path, src_files, header_files);
+        let (src_files, header_files) =
+            get_file_list(&args.path).expect("Error while readig files");
+
+        // println!("{:?}, {:?}", src_files, header_files);
+
+        compiler = Compiler::new(config, args.path.clone(), src_files, header_files);
+    }
 
     match args.mode {
         Modes::Build => {
@@ -77,6 +86,9 @@ fn main() {
             compiler.prepare();
             compiler.compile(args.verbose);
             compiler.run();
+        }
+        Modes::Init => {
+            init::init(args.path);
         }
     }
 }
