@@ -164,8 +164,6 @@ impl Compiler {
                 .to_string(),
         );
 
-        println!("{scanned_files:?}");
-
         (src_file, header_files)
     }
 
