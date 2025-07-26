@@ -56,7 +56,7 @@ impl Compiler {
 
             let o_path_strip = o_path_dir.to_str().unwrap();
 
-            println!("Compiling {}", file);
+            println!("Compiling {file}");
 
             let mut c_path = path::Path::new(&file).parent().unwrap().components();
             c_path.next();
@@ -85,7 +85,7 @@ impl Compiler {
             );
 
             if verbose {
-                println!("{}", command);
+                println!("{command}");
             }
 
             o_s.push(o_path_strip.to_string());
@@ -96,10 +96,10 @@ impl Compiler {
             let stderr = std::str::from_utf8(&out.stderr).unwrap();
 
             if !stdout.is_empty() {
-                println!("{}", stdout);
+                println!("{stdout}");
             }
             if !stderr.is_empty() {
-                println!("{}", stderr);
+                println!("{stderr}");
             }
         }
 
@@ -110,7 +110,7 @@ impl Compiler {
         );
 
         for o_file in o_s {
-            link_command = format!("{} {}", link_command, o_file);
+            link_command = format!("{link_command} {o_file}");
         }
 
         let target_path = path::Path::new(&self.path).join(&self.config.general.target);
@@ -125,7 +125,7 @@ impl Compiler {
         println!("Building {}", target_path.to_str().unwrap());
 
         if verbose {
-            println!("{}", link_command);
+            println!("{link_command}");
         }
 
         let out = Command::new("sh")
@@ -138,10 +138,10 @@ impl Compiler {
         let stderr = std::str::from_utf8(&out.stderr).unwrap();
 
         if !stdout.is_empty() {
-            println!("{}", stdout);
+            println!("{stdout}");
         }
         if !stderr.is_empty() {
-            println!("{}", stderr);
+            println!("{stderr}");
         }
     }
 
@@ -163,6 +163,8 @@ impl Compiler {
                 .unwrap()
                 .to_string(),
         );
+
+        println!("{scanned_files:?}");
 
         (src_file, header_files)
     }
@@ -301,7 +303,7 @@ impl Compiler {
         let mut inc_string = "".to_string();
 
         for inc_dir in self.inc_dirs.clone() {
-            inc_string = format!("{} -I{}", inc_string, inc_dir);
+            inc_string = format!("{inc_string} -I{inc_dir}");
         }
 
         inc_string

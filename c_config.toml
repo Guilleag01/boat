@@ -1,6 +1,7 @@
+
 [general]
 target = "test"
-main = "src/main.c"
+main = "main.c"
 
 [build]
 build_dir = "build"

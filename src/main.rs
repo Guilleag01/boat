@@ -61,8 +61,15 @@ fn main() {
     } else {
         let conf_path = path::Path::new(args.path.as_str()).join("c_config.toml");
 
-        let contents = fs::read_to_string(conf_path.clone())
-            .unwrap_or_else(|_| panic!("Couldn't read {}", conf_path.to_str().unwrap()));
+        // let contents = fs::read_to_string(conf_path.clone())
+        //     .unwrap_or_else(|_| panic!("Couldn't read {}", conf_path.to_str().unwrap()));
+
+        let contents = if let Ok(s) = fs::read_to_string(conf_path.clone()) {
+            s
+        } else {
+            eprintln!("Error: Couldn't read c_config.toml");
+            return;
+        };
 
         let config: Config = toml::from_str(&contents).unwrap();
 
