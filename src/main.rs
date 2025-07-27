@@ -26,16 +26,6 @@ impl Display for Modes {
     }
 }
 
-// impl ToString for Modes {
-//     fn to_string(&self) -> String {
-//         match self {
-//             Modes::Build => "build".to_string(),
-//             Modes::Clean => "clean".to_string(),
-//             Modes::Run => "run".to_string(),
-//         }
-//     }
-// }
-
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Args {
@@ -61,9 +51,6 @@ fn main() {
     } else {
         let conf_path = path::Path::new(args.path.as_str()).join("c_config.toml");
 
-        // let contents = fs::read_to_string(conf_path.clone())
-        //     .unwrap_or_else(|_| panic!("Couldn't read {}", conf_path.to_str().unwrap()));
-
         let contents = if let Ok(s) = fs::read_to_string(conf_path.clone()) {
             s
         } else {
@@ -73,12 +60,8 @@ fn main() {
 
         let config: Config = toml::from_str(&contents).unwrap();
 
-        // println!("{:?}", config);
-
         let (src_files, header_files) =
             get_file_list(&args.path).expect("Error while readig files");
-
-        // println!("{:?}, {:?}", src_files, header_files);
 
         compiler = Compiler::new(config, args.path.clone(), src_files, header_files);
     }

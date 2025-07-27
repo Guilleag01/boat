@@ -1,8 +1,0 @@
-[general]
-target = "test"
-main = "src/main.c"
-
-[build]
-build_dir = "build"
-cc = "gcc"
-cflags = "-Wall"
