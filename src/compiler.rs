@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::process::Command;
+use std::process::{self, Command};
 use std::{collections::HashSet, fs, path};
 
 use crate::config::Config;
@@ -277,16 +277,36 @@ impl Compiler {
             println!("{command}");
         }
 
-        let out = Command::new("sh").arg("-c").arg(command).output().unwrap();
+        Command::new("sh")
+            .arg("-c")
+            .arg(command)
+            .spawn()
+            .unwrap()
+            .wait()
+            .unwrap();
 
-        let stdout = std::str::from_utf8(&out.stdout).unwrap();
-        let stderr = std::str::from_utf8(&out.stderr).unwrap();
+        // let stdout = std::str::from_utf8(&out.stdout).unwrap();
+        // let stderr = std::str::from_utf8(&out.stderr).unwrap();
 
-        if !stdout.is_empty() {
-            println!("{stdout}");
-        }
-        if !stderr.is_empty() {
-            println!("{stderr}");
-        }
+        // Command::new(command).spawn().unwrap().wait().unwrap();
+
+        // process::Command::new("pwd")
+        //     .spawn()
+        //     .unwrap()
+        //     .wait()
+        //     .unwrap();
+
+        // process::Command::new(format!("sh -c \"{command}\""))
+        //     .spawn()
+        //     .unwrap()
+        //     .wait()
+        //     .unwrap();
+
+        // if !stdout.is_empty() {
+        //     println!("{stdout}");
+        // }
+        // if !stderr.is_empty() {
+        //     println!("{stderr}");
+        // }
     }
 }
