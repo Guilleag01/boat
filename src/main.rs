@@ -75,7 +75,7 @@ fn main() {
         Modes::Run => {
             compiler.prepare();
             compiler.compile(args.verbose);
-            compiler.run();
+            compiler.run(args.verbose);
         }
         Modes::Init => {
             init::init(args.path);

@@ -67,13 +67,7 @@ impl Compiler {
 
             let mkdir_command = format!("mkdir -p {}", c_path_full.to_str().unwrap());
 
-            Command::new("sh")
-                .arg("-c")
-                .arg(mkdir_command)
-                .output()
-                .unwrap();
-
-            // TODO: PRINT WHEN VERBOSE
+            self.run_command(mkdir_command, verbose);
 
             let command = format!(
                 "{} {} -c {} {} -o {}",
@@ -84,23 +78,9 @@ impl Compiler {
                 o_path_strip
             );
 
-            if verbose {
-                println!("{command}");
-            }
-
             o_s.push(o_path_strip.to_string());
 
-            let out = Command::new("sh").arg("-c").arg(command).output().unwrap();
-
-            let stdout = std::str::from_utf8(&out.stdout).unwrap();
-            let stderr = std::str::from_utf8(&out.stderr).unwrap();
-
-            if !stdout.is_empty() {
-                println!("{stdout}");
-            }
-            if !stderr.is_empty() {
-                println!("{stderr}");
-            }
+            self.run_command(command, verbose);
         }
 
         let mut link_command = format!(
@@ -122,27 +102,9 @@ impl Compiler {
             target_path.to_str().unwrap()
         );
 
-        println!("Building {}", target_path.to_str().unwrap());
+        println!(" Building {}", target_path.to_str().unwrap());
 
-        if verbose {
-            println!("{link_command}");
-        }
-
-        let out = Command::new("sh")
-            .arg("-c")
-            .arg(link_command)
-            .output()
-            .unwrap();
-
-        let stdout = std::str::from_utf8(&out.stdout).unwrap();
-        let stderr = std::str::from_utf8(&out.stderr).unwrap();
-
-        if !stdout.is_empty() {
-            println!("{stdout}");
-        }
-        if !stderr.is_empty() {
-            println!("{stderr}");
-        }
+        self.run_command(link_command, verbose);
     }
 
     pub fn get_needed_files(&self) -> (Vec<String>, Vec<String>) {
@@ -178,7 +140,7 @@ impl Compiler {
             .unwrap_or_else(|_| panic!("Couldn't read {}", file_path.to_str().unwrap()));
 
         lazy_static! {
-            static ref RE: Regex = Regex::new(r#"#include (<\w+.h>|\"\w+\.h\")"#).unwrap();
+            static ref RE: Regex = Regex::new(r#"#include (<(\w/?)+.h>|\"(\w/?)+\.h\")"#).unwrap();
         }
 
         let mut header_paths: HashSet<String> = HashSet::new();
@@ -218,12 +180,16 @@ impl Compiler {
         // let mut scanned_files = Vec::new();
 
         for find in finds.clone() {
+            // println!("{find:?}");
             // let find_name = fin[10..find.len() - 1].to_string();
 
-            if headers_names.contains(&find) {
+            if headers_names.contains(&find.split("/").last().unwrap().to_string()) {
                 let h_path = path::Path::new(
-                    self.header_files[headers_names.iter().position(|e| *e == find).unwrap()]
-                        .as_str(),
+                    self.header_files[headers_names
+                        .iter()
+                        .position(|e| *e == find.split("/").last().unwrap())
+                        .unwrap()]
+                    .as_str(),
                 );
 
                 let h_dir = h_path.parent().unwrap().to_str().unwrap().to_string();
@@ -281,20 +247,19 @@ impl Compiler {
     pub fn clean(&self) {
         let build_dir = path::Path::new(&self.path).join(self.config.build.build_dir.clone());
         let target_path = path::Path::new(&self.path).join(self.config.general.target.clone());
-        println!("Removing dir {}", build_dir.to_str().unwrap());
+        println!(" Removing dir {}", build_dir.to_str().unwrap());
         fs::remove_dir_all(build_dir).unwrap();
         println!("Removing file {}", target_path.to_str().unwrap());
         fs::remove_file(target_path).unwrap();
     }
 
-    pub fn run(&self) {
+    pub fn run(&self, verbose: bool) {
         let target_path = path::Path::new(&self.path).join(self.config.general.target.clone());
-        println!("Running {}", target_path.to_str().unwrap());
-        Command::new("sh")
-            .arg("-c")
-            .arg(format!("./{}", target_path.to_str().unwrap()).as_str())
-            .output()
-            .unwrap();
+        println!("  Running {}", target_path.to_str().unwrap());
+
+        let command = format!("./{}", target_path.to_str().unwrap());
+
+        self.run_command(command, verbose);
     }
 
     fn get_inc_string(&self) -> String {
@@ -305,5 +270,23 @@ impl Compiler {
         }
 
         inc_string
+    }
+
+    fn run_command(&self, command: String, verbose: bool) {
+        if verbose {
+            println!("{command}");
+        }
+
+        let out = Command::new("sh").arg("-c").arg(command).output().unwrap();
+
+        let stdout = std::str::from_utf8(&out.stdout).unwrap();
+        let stderr = std::str::from_utf8(&out.stderr).unwrap();
+
+        if !stdout.is_empty() {
+            println!("{stdout}");
+        }
+        if !stderr.is_empty() {
+            println!("{stderr}");
+        }
     }
 }
